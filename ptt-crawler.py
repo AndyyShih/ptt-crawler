@@ -29,7 +29,6 @@ headers = {'user-agent' : 'my-app/0.0.1'}
 rs = requests.Session()
 rs.post('https://www.ptt.cc/ask/over18' , data = payload , headers = headers)
 res = rs.get(url , headers = headers)
-html = rs.get(url , headers = headers).content
 
 soup = BeautifulSoup(driver.page_source , 'html.parser')
 
@@ -59,6 +58,11 @@ with open("./ptt.csv",'w',newline='',encoding='utf-8-sig') as csvfile:
             ptt_writer.writerow(article_data[5]) #發文時間
 
             #抓取文章內文
+            inner_url = []
+            for i in soup.select('.f2 a'):
+                inner_url.extend(i)
+            print(inner_url[0])
+            html = rs.get(inner_url[0] , headers = headers).content
             selector = etree.HTML(html)
             Content = selector.xpath('//*[@id="main-content"]/text()')
             ptt_writer.writerow(Content)
@@ -72,7 +76,7 @@ with open("./ptt.csv",'w',newline='',encoding='utf-8-sig') as csvfile:
             #抓取文章尾部資料(.f2)
             article_tail = soup.select('#main-content')
             for article_tail in article_tail:
-                ptt_writer.writerow(article_tail.select('.f2 a')[0])
+                ptt_writer.writerow(article_tail.select('.f2 a')[0]) #文章網址
         
             #抓取推文及推文時間(.push)
             article_push = soup.select('.push')
