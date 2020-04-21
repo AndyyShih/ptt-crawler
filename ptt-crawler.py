@@ -8,18 +8,30 @@ import csv
 from bs4 import BeautifulSoup
 import requests
 import selenium.webdriver.support.ui as ui
+from lxml import etree
 
+Block = input("請輸入版塊名稱")
 #開啟瀏覽器
 chromedriver = "E:/ptt-crawler/chromedriver"
 driver = webdriver.Chrome(chromedriver)
 
-#設定瀏覽網頁
-url = 'https://www.ptt.cc/bbs/Gossiping/index.html'
+#設定瀏覽版塊
+url_head = 'https://www.ptt.cc/bbs/'
+url_block = str(Block)
+url_tail = '/index.html'
+url = url_head + url_block + url_tail
 payload = {
     'from' : url ,
     'yes' : 'yes'
 }
 headers = {'user-agent' : 'my-app/0.0.1'}
+
+rs = requests.Session()
+rs.post('https://www.ptt.cc/ask/over18' , data = payload , headers = headers)
+res = rs.get(url , headers = headers)
+html = rs.get(url , headers = headers).content
+
+soup = BeautifulSoup(driver.page_source , 'html.parser')
 
 #通過18歲條款頁面
 driver.get(url)
@@ -32,11 +44,11 @@ with open("./ptt.csv",'w',newline='',encoding='utf-8-sig') as csvfile:
     ptt_writer=csv.writer(csvfile)
 
     #指定抓取頁數的迴圈
-    for pages in range(0,3):
+    for pages in range(0,1):
         soup = BeautifulSoup(driver.page_source , 'html.parser')
         #點擊文章
-        for articles in range(0,3):
-            driver.find_element_by_xpath("//button[@class = 'btn-big']").click()
+        for articles in range(0,1):
+            driver.find_element_by_xpath("//div[@class = 'title']/a").click()
             #抓取文章內容
             soup = BeautifulSoup(driver.page_source , 'html.parser')
 
@@ -47,8 +59,9 @@ with open("./ptt.csv",'w',newline='',encoding='utf-8-sig') as csvfile:
             ptt_writer.writerow(article_data[5]) #發文時間
 
             #抓取文章內文
-            #article_content = soup.select('#main-content')
-            #article_writter.writerow(article_content) #無法僅留存#text
+            selector = etree.HTML(html)
+            Content = selector.xpath('//*[@id="main-content"]/text()')
+            ptt_writer.writerow(Content)
 
              #抓取引文(.f2 .f6)
             article_quotation = soup.select('#main-content')
@@ -70,4 +83,4 @@ with open("./ptt.csv",'w',newline='',encoding='utf-8-sig') as csvfile:
         #返回文章列表
             driver.back()
         #下一頁
-        driver.find_element_by_xpath("//button[@class = 'btn-big']").click()
+        driver.find_element_by_xpath("//div[@class = 'btn-group btn-group-paging']/a[2]").click()

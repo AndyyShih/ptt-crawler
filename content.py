@@ -8,11 +8,10 @@ import csv
 from bs4 import BeautifulSoup
 import requests
 import selenium.webdriver.support.ui as ui
+from lxml import etree
 
-#構想:點擊貼文->抓完資料->點上一頁
 #抓取貼文內資料
-
-url = 'https://www.ptt.cc/bbs/Gossiping/M.1587019790.A.0D4.html'
+url = 'https://www.ptt.cc/bbs/Gossiping/M.1587455293.A.F83.html'
 payload = {
     'from' : url ,
     'yes' : 'yes'
@@ -22,6 +21,7 @@ headers = {'user-agent' : 'my-app/0.0.1'}
 rs = requests.Session()
 rs.post('https://www.ptt.cc/ask/over18' , data = payload , headers = headers)
 res = rs.get(url , headers = headers)
+html = rs.get(url , headers = headers).content
 
 soup = BeautifulSoup(res.text , 'html.parser')
 
@@ -35,8 +35,9 @@ with open("./article.csv",'w',newline='',encoding='utf-8-sig') as csvfile:
     article_writter.writerow(article_data[5]) #發文時間
 
     #抓取文章內文
-    #article_content = soup.select('#main-content')
-    #article_writter.writerow(article_content) #無法僅留存#text
+    selector = etree.HTML(html)
+    Content = selector.xpath('//*[@id="main-content"]/text()')
+    article_writter.writerow(Content)
     
     #抓取引文(.f2 .f6)
     article_quotation = soup.select('#main-content')
