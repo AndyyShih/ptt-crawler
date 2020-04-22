@@ -10,7 +10,7 @@ import requests
 import selenium.webdriver.support.ui as ui
 from lxml import etree
 
-Block = input("請輸入版塊名稱")
+Block = input("請輸入版塊名稱:")
 #開啟瀏覽器
 chromedriver = "E:/ptt-crawler/chromedriver"
 driver = webdriver.Chrome(chromedriver)
@@ -46,8 +46,13 @@ with open("./ptt.csv",'w',newline='',encoding='utf-8-sig') as csvfile:
     for pages in range(0,1):
         soup = BeautifulSoup(driver.page_source , 'html.parser')
         #點擊文章
-        for articles in range(0,1):
-            driver.find_element_by_xpath("//div[@class = 'title']/a").click()
+        article_url = []
+        for link in driver.find_elements_by_xpath('//div[@class = "title"]/a'):
+            article_url.append(link.get_attribute('href'))
+        length = len(article_url)
+
+        for articles in range(0,length-3):
+            driver.get(article_url[articles])
             #抓取文章內容
             soup = BeautifulSoup(driver.page_source , 'html.parser')
 
@@ -61,7 +66,6 @@ with open("./ptt.csv",'w',newline='',encoding='utf-8-sig') as csvfile:
             inner_url = []
             for i in soup.select('.f2 a'):
                 inner_url.extend(i)
-            print(inner_url[0])
             html = rs.get(inner_url[0] , headers = headers).content
             selector = etree.HTML(html)
             Content = selector.xpath('//*[@id="main-content"]/text()')
@@ -88,3 +92,5 @@ with open("./ptt.csv",'w',newline='',encoding='utf-8-sig') as csvfile:
             driver.back()
         #下一頁
         driver.find_element_by_xpath("//div[@class = 'btn-group btn-group-paging']/a[2]").click()
+
+driver.close()
