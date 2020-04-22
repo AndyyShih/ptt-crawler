@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 import requests
 import selenium.webdriver.support.ui as ui
 from lxml import etree
+import random
 
 Block = input("請輸入版塊名稱:")
 #開啟瀏覽器
@@ -37,13 +38,14 @@ driver.get(url)
 driver.find_element_by_xpath("//button[@class = 'btn-big']").click()
 
 soup = BeautifulSoup(driver.page_source , 'html.parser')
+time.sleep(1)
 
 #建立CSV並準備寫入資料
 with open("./ptt.csv",'w',newline='',encoding='utf-8-sig') as csvfile:
     ptt_writer=csv.writer(csvfile)
 
     #指定抓取頁數的迴圈
-    for pages in range(0,1):
+    for pages in range(0,4):
         soup = BeautifulSoup(driver.page_source , 'html.parser')
         #點擊文章
         article_url = []
@@ -53,6 +55,7 @@ with open("./ptt.csv",'w',newline='',encoding='utf-8-sig') as csvfile:
 
         for articles in range(0,length-3):
             driver.get(article_url[articles])
+            time.sleep(1)
             #抓取文章內容
             soup = BeautifulSoup(driver.page_source , 'html.parser')
 
@@ -71,11 +74,15 @@ with open("./ptt.csv",'w',newline='',encoding='utf-8-sig') as csvfile:
             Content = selector.xpath('//*[@id="main-content"]/text()')
             ptt_writer.writerow(Content)
 
-             #抓取引文(.f2 .f6)
+            #抓取引文(.f2 .f6)
             article_quotation = soup.select('#main-content')
             for article_quotation in article_quotation:
-                ptt_writer.writerow(article_quotation.select('.f2')[0])
-                ptt_writer.writerow(article_quotation.select('.f6')) #無法過濾tag
+                ptt_writer.writerow(article_quotation.select('.f2')[0])#引句
+            quotation = []
+            for i in soup.select('.f6'):
+                quotation.extend(i)
+            ptt_writer.writerow(quotation)#引文內容
+            
         
             #抓取文章尾部資料(.f2)
             article_tail = soup.select('#main-content')
@@ -90,6 +97,7 @@ with open("./ptt.csv",'w',newline='',encoding='utf-8-sig') as csvfile:
                 ptt_writer.writerow(article_push.select('span')[3]) #推文時間
         #返回文章列表
             driver.back()
+            time.sleep(random.randint(1,5))
         #下一頁
         driver.find_element_by_xpath("//div[@class = 'btn-group btn-group-paging']/a[2]").click()
 

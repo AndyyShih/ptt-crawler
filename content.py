@@ -42,8 +42,11 @@ with open("./article.csv",'w',newline='',encoding='utf-8-sig') as csvfile:
     #抓取引文(.f2 .f6)
     article_quotation = soup.select('#main-content')
     for article_quotation in article_quotation:
-        article_writter.writerow(article_quotation.select('.f2')[0])
-        article_writter.writerow(article_quotation.select('.f6')) #無法過濾tag
+        article_writter.writerow(article_quotation.select('.f2')[0])#引句
+    quotation = []
+    for i in soup.select('.f6'):
+        quotation.extend(i)
+    article_writter.writerow(quotation)#引文內容
     
     #抓取文章尾段資料(.f2)
     article_tail = soup.select('#main-content')
