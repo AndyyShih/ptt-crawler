@@ -12,6 +12,6 @@
 
 尚未解決的問題:<br>
 1.文末如果文章網址是綠色的，會中斷執行<br>
-https://cdn.discordapp.com/attachments/679337498908033024/702419410085740675/unknown.png<br>
+![範例](https://cdn.discordapp.com/attachments/679337498908033024/702419410085740675/unknown.png)<br>
 2.無法將公告剔除爬文<br>
 3.無法同時爬取有無非18歲條款的版塊<br>
